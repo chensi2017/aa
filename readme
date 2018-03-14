@@ -1,0 +1,1 @@
+kafka.broker.list一定要将所有的kafka地址填写完整,否则提交offset时会出现失败的可能
