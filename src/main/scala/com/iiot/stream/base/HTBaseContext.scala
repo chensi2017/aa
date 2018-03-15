@@ -86,6 +86,8 @@ abstract class HTBaseContext {
       .set("spark.locality.wait",configs.getProperty("spark.locality.wait"))
       .set("spark.streaming.kafka.maxRatePerPartition", configs.getProperty("spark.streaming.kafka.maxRatePerPartition"))
       .set("spark.kryo.registrationRequired", "true")
+        .set("spark.scheduler.mode","FAIR")//开启FAIR模式
+        .set("spark.streaming.concurrentJobs","2")//同时运行两个job
       .registerKryoClasses(Array(classOf[DPList], classOf[DPListWithDN],
       classOf[DPUnion],classOf[MetricWithDN],classOf[com.htiiot.resources.utils.DeviceNumber]))
     scc = new StreamingContext(sparkConf, Duration(Integer.parseInt(configs.getProperty("duration.num"))))

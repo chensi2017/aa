@@ -115,6 +115,7 @@ class HTStateStatisticsFewerReduceextends extends Serializable {
   def DPStatistics(jsonDStream: DStream[DPUnion]): Unit = {
     jsonDStream.foreachRDD(rdd => {
       println("the state rdd partitions size is :"+ rdd.partitions.size)
+      rdd.sparkContext.setLocalProperty("spark.scheduler.pool","pool_a")
       rdd.foreachPartition(foreachPartitionFunc)
   })
   }

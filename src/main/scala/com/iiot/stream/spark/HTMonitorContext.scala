@@ -14,6 +14,8 @@ import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 class HTMonitorContext extends HTBaseContext{
 
   override def setExecutor(stream: DStream[(String, String)],km:KafkaManager): Unit = {
+    stream.cache()
+
     //val jsonDStream:DStream[DPUnion] = HTInputDStreamFormat.inputDStreamFormat(stream)
     val jsonDStream:DStream[DPUnion] = HTInputDStreamFormat.inputDStreamFormatWithDN(stream)
 
@@ -28,7 +30,6 @@ class HTMonitorContext extends HTBaseContext{
 
     //提交offset
     stream.foreachRDD(rdd=>{
-      println("正在提交offset...............")
       println("正在提交offset...............")
       km.updateOffsets(rdd)
     })

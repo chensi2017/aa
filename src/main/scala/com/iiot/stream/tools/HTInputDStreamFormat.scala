@@ -1,7 +1,6 @@
 package com.iiot.stream.tools
 
 import java.io.IOException
-
 import com.alibaba.fastjson.{JSON, JSONObject}
 import com.htiiot.store.model.{DataPoint, Metric}
 import com.iiot.stream.base._
@@ -13,7 +12,6 @@ import org.apache.http.util.EntityUtils
 import org.apache.log4j.Logger
 import org.apache.spark.streaming.dstream.{DStream, InputDStream}
 import redis.clients.jedis.Jedis
-
 import scala.collection.mutable.ArrayBuffer
 
 /**
@@ -33,10 +31,29 @@ object HTInputDStreamFormat {
     resultJson
   }
 
-  def inputDStreamFormatWithDN(stream: DStream[(String, String)]): DStream[DPUnion] = {
+  /*def inputDStreamFormatWithDN(stream: DStream[(String, String)]): DStream[DPUnion] = {
     val resultJson = stream.map(x => JSON.parseObject(x._2,classOf[DPListWithDN]))
       .map(x => dataTransformWithDN(x))
       .flatMap(x => x)
+    //缓存RDD
+    resultJson.cache()
+    resultJson
+  }*/
+
+  /**
+    * 每个partition的数据量过大executor的内存过小可能会造成OOM(2018/3/15 11:05)
+    * @param stream
+    * @return
+    */
+  def inputDStreamFormatWithDN(stream: DStream[(String, String)]): DStream[DPUnion] = {
+    val resultJson = stream.mapPartitions(iter=>{
+      var result = List[ArrayBuffer[DPUnion]]()
+      while(iter.hasNext){
+        var r = dataTransformWithDN(JSON.parseObject(iter.next._2,classOf[DPListWithDN]))
+        result.::(r)
+      }
+      result.iterator
+    }).flatMap(x=>x)
     resultJson.cache()
     resultJson
   }
